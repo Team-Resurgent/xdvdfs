@@ -193,40 +193,6 @@ jobs:
           name: xdvdfs-fsd-windows-${{ github.sha }}
           path: xdvdfs-fsd-windows-${{ github.sha }}.zip
 
-  build_fsd_macos:
-    name: Build for macOS (xdvdfs-fsd, ${{ matrix.arch }})
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        include:
-          - arch: arm64
-            target: aarch64-apple-darwin
-          - arch: x64
-            target: x86_64-apple-darwin
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      # FUSE mount is Linux-only; macOS builds use the NFS backend.
-      - name: Build
-        run: cargo build -p xdvdfs-fsd --release --target ${{ matrix.target }} --no-default-features
-
-      - name: Package artifact
-        run: |
-          chmod +x target/${{ matrix.target }}/release/xdvdfsd
-          zip -j xdvdfs-fsd-macos-${{ matrix.arch }}-${{ github.sha }}.zip LICENSE target/${{ matrix.target }}/release/xdvdfsd
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: xdvdfs-fsd-macos-${{ matrix.arch }}-${{ github.sha }}
-          path: xdvdfs-fsd-macos-${{ matrix.arch }}-${{ github.sha }}.zip
-
   release:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
@@ -238,7 +204,6 @@ jobs:
         build_web,
         build_fsd_linux,
         build_fsd_windows,
-        build_fsd_macos,
       ]
     permissions:
       contents: write

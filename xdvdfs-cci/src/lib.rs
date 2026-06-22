@@ -67,12 +67,15 @@ pub fn discover_slices(first_path: &Path) -> Result<Vec<PathBuf>, CciError> {
         )));
     }
 
-    let stem = first_path.file_stem().and_then(|s| s.to_str()).ok_or_else(|| {
-        CciError::Io(std::io::Error::new(
-            std::io::ErrorKind::InvalidInput,
-            "invalid file name",
-        ))
-    })?;
+    let stem = first_path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .ok_or_else(|| {
+            CciError::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "invalid file name",
+            ))
+        })?;
 
     let dir = first_path.parent().unwrap_or(Path::new("."));
 
@@ -173,9 +176,9 @@ pub fn encode_sector(sector: &[u8; SECTOR_SIZE]) -> (Vec<u8>, bool) {
 
     let threshold = SECTOR_SIZE as i32 - (4 + multiple as i32);
     if compressed_len > 0 && (compressed_len as i32) < threshold {
-        let pad_len =
-            (((compressed_len + 1 + multiple as usize - 1) / multiple as usize) * multiple as usize)
-                - (compressed_len + 1);
+        let pad_len = (((compressed_len + 1 + multiple as usize - 1) / multiple as usize)
+            * multiple as usize)
+            - (compressed_len + 1);
         let mut blob = Vec::with_capacity(1 + compressed_len + pad_len);
         blob.push(pad_len as u8);
         blob.extend_from_slice(&compressed_buf[..compressed_len]);
@@ -187,7 +190,11 @@ pub fn encode_sector(sector: &[u8; SECTOR_SIZE]) -> (Vec<u8>, bool) {
 }
 
 /// Decode one sector from a file span starting at `blob` (full index span).
-pub fn decode_sector_blob(blob: &[u8], lz4: bool, out: &mut [u8; SECTOR_SIZE]) -> Result<(), CciError> {
+pub fn decode_sector_blob(
+    blob: &[u8],
+    lz4: bool,
+    out: &mut [u8; SECTOR_SIZE],
+) -> Result<(), CciError> {
     if !lz4 && blob.len() == SECTOR_SIZE {
         out.copy_from_slice(blob);
         return Ok(());
@@ -201,8 +208,8 @@ pub fn decode_sector_blob(blob: &[u8], lz4: bool, out: &mut [u8; SECTOR_SIZE]) -
     if comp_len < 1 || trail >= blob.len().saturating_sub(1) {
         return Err(CciError::BadSector(0));
     }
-    let got = decompress_into(&blob[1..1 + comp_len], out)
-        .map_err(|e| CciError::Lz4(e.to_string()))?;
+    let got =
+        decompress_into(&blob[1..1 + comp_len], out).map_err(|e| CciError::Lz4(e.to_string()))?;
     if got != SECTOR_SIZE {
         return Err(CciError::BadSector(0));
     }
@@ -288,7 +295,11 @@ impl CciImage {
     }
 
     /// Read global LBA `sector` into `out`.
-    pub fn read_sector(&mut self, sector: u64, out: &mut [u8; SECTOR_SIZE]) -> Result<(), CciError> {
+    pub fn read_sector(
+        &mut self,
+        sector: u64,
+        out: &mut [u8; SECTOR_SIZE],
+    ) -> Result<(), CciError> {
         let (si, local) = self
             .slices
             .iter()

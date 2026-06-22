@@ -13,7 +13,9 @@ pub struct CciEncodeArgs {
     #[arg(help = "Source ISO path")]
     pub source: String,
 
-    #[arg(help = "Output path (e.g. game.cci). Multiple parts rename to game.1.cci, game.2.cci, …")]
+    #[arg(
+        help = "Output path (e.g. game.cci). Multiple parts rename to game.1.cci, game.2.cci, …"
+    )]
     pub dest: String,
 
     #[arg(

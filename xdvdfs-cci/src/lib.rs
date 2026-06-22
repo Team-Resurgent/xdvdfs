@@ -176,13 +176,12 @@ pub fn encode_sector(sector: &[u8; SECTOR_SIZE]) -> (Vec<u8>, bool) {
 
     let threshold = SECTOR_SIZE as i32 - (4 + multiple as i32);
     if compressed_len > 0 && (compressed_len as i32) < threshold {
-        let pad_len = (((compressed_len + 1 + multiple as usize - 1) / multiple as usize)
-            * multiple as usize)
+        let pad_len = (compressed_len + 1).div_ceil(multiple as usize) * multiple as usize
             - (compressed_len + 1);
         let mut blob = Vec::with_capacity(1 + compressed_len + pad_len);
         blob.push(pad_len as u8);
         blob.extend_from_slice(&compressed_buf[..compressed_len]);
-        blob.extend(std::iter::repeat(0u8).take(pad_len));
+        blob.extend(std::iter::repeat_n(0u8, pad_len));
         return (blob, true);
     }
 
